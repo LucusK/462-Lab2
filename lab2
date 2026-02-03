@@ -1,0 +1,22 @@
+import RPi.GPIO as GPIO
+import time
+
+PIN = 10
+
+
+def main():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(PIN,GPIO.OUT)
+
+    try:
+        while True:
+            GPIO.output(PIN, GPIO.HIGH)
+            time.sleep(0.000005)
+            GPIO.output(PIN, GPIO.LOW)
+            time.sleep(0.000005)
+    except KeyboardInterrupt:
+        GPIO.cleanup()
+    
+
+if __name__ == "__main__":
+    main()
