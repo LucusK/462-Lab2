@@ -10,7 +10,7 @@ import threading
 # ------------------- CONFIG -------------------
 BUTTON_PIN = 17
 VCC = 3.3          # Voltage connected to DAC VCC
-MAX_DAC = 4095     # 12-bit resolution
+MAX_DAC = 65535    # 12-bit resolution
 # ----------------------------------------------
 
 # Setup I2C + DAC
@@ -67,17 +67,14 @@ def triangle_wave(freq, vmax):
 
 def sine_wave(freq, vmax):
     global stop_flag
-    steps = 100
-    period = 1.0 / freq
-    step_time = period / steps
+    start = time.perf_counter()
 
     while not stop_flag:
-        for i in range(steps):
-            if stop_flag: break
-            angle = 2 * math.pi * i / steps
-            v = (math.sin(angle) * 0.5 + 0.5) * vmax
-            dac.value = voltage_to_dac(v)
-            time.sleep(step_time)
+        t = time.perf_counter() - start
+        angle = 2 * math.pi * freq * t
+        v = (math.sin(angle) * 0.5 + 0.5) * vmax
+        dac.value = voltage_to_dac(v)
+
 
 # -------- User Input --------
 
