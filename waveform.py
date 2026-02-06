@@ -7,29 +7,26 @@ import RPi.GPIO as GPIO
 import adafruit_mcp4725
 import threading
 
-# ------------------- CONFIG -------------------
 BUTTON_PIN = 17
-VCC = 3.3          # Voltage connected to DAC VCC
-MAX_DAC = 65535    # 12-bit resolution
-# ----------------------------------------------
+VCC = 3.3       
+MAX_DAC = 65535   
 
-# Setup I2C + DAC
+
+# I2C + DAC
 i2c = busio.I2C(board.SCL, board.SDA)
 dac = adafruit_mcp4725.MCP4725(i2c, address=0x62)
 
-# Setup Button
+# Button
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 running = False
 stop_flag = False
 
-# -------- Helper --------
 def voltage_to_dac(v):
     return int((v / VCC) * MAX_DAC)
 
-# -------- Wave Generators --------
-
+# square wave
 def square_wave(freq, vmax):
     global stop_flag
     period = 1.0 / freq
@@ -42,7 +39,7 @@ def square_wave(freq, vmax):
         dac.value = low
         time.sleep(period / 2)
 
-
+# triangle wave
 def triangle_wave(freq, vmax):
     global stop_flag
     steps = 100
@@ -64,7 +61,7 @@ def triangle_wave(freq, vmax):
             dac.value = voltage_to_dac(v)
             time.sleep(step_time)
 
-
+# sine wave
 def sine_wave(freq, vmax):
     global stop_flag
     start = time.perf_counter()
@@ -75,9 +72,7 @@ def sine_wave(freq, vmax):
         v = (math.sin(angle) * 0.5 + 0.5) * vmax
         dac.value = voltage_to_dac(v)
 
-
-# -------- User Input --------
-
+# get inputs from the user
 def get_inputs():
     while True:
         shape = input("Waveform (square / triangle / sin): ").strip().lower()
@@ -105,8 +100,7 @@ def get_inputs():
 
     return shape, freq, vmax
 
-# -------- Button Wait --------
-
+# button logic
 def wait_for_button():
     while GPIO.input(BUTTON_PIN) == GPIO.HIGH:
         time.sleep(0.01)
@@ -114,6 +108,7 @@ def wait_for_button():
 
 print("Ready. Press button to begin.")
 
+# main code
 try:
     while True:
         wait_for_button()
@@ -142,6 +137,7 @@ try:
 except KeyboardInterrupt:
     pass
 
+# clean up
 finally:
     dac.value = 0
     GPIO.cleanup()
